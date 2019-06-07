@@ -158,50 +158,51 @@ def star_end_date(my_dict):
 # find all rows that have start-end date and for the next x number of rows duplicate
 #repeat rows
 
-# File Path for data
-source = "/Users/kevinchoi/Desktop/Projects/Planet Fitness/Data Wrangling/2017/Fresno Shaw"
-source2 = "/Users/kevinchoi/Desktop/Projects/Planet Fitness/Data Wrangling/2017/marketing"
-WorkingFile = "2017 Fresno CoOp ROI Analysis 1.17.18.xlsx"
+if __name__ == '__main__':
+    # File Path for data
+    source = "/Users/kevinchoi/Desktop/Projects/Planet Fitness/Data Wrangling/2017/Fresno Shaw"
+    source2 = "/Users/kevinchoi/Desktop/Projects/Planet Fitness/Data Wrangling/2017/marketing"
+    WorkingFile = "2017 Fresno CoOp ROI Analysis 1.17.18.xlsx"
 
-# Join data
-appended_data = join_workbook(source)
-appended_data = product_tiers(appended_data)
+    # Join data
+    appended_data = join_workbook(source)
+    appended_data = product_tiers(appended_data)
 
-# Marketing dataframes
-my_dict = marketing_workbook(source2, WorkingFile)
-my_dict = split_media_dates(my_dict)
-my_dict = star_end_date(my_dict)
+    # Marketing dataframes
+    my_dict = marketing_workbook(source2, WorkingFile)
+    my_dict = split_media_dates(my_dict)
+    my_dict = star_end_date(my_dict)
 
 
-appended_data = appended_data.assign(key=1)
-my_dict = my_dict.assign(key=1)
-df_merge = pd.merge(appended_data, my_dict, on='key').drop('key',axis=1)
-# These are all the dates that will have the days between start-end date. Now I need to join this data to "appended_data"
-df_merge2 = df_merge.query('DOB >= start_date and DOB <= end_date')
-df_merge3 = df_merge2.loc[:,"DOB":]
-df_out = pd.merge(appended_data, df_merge3, how="left", on="DOB").drop(["key"], axis=1)
+    appended_data = appended_data.assign(key=1)
+    my_dict = my_dict.assign(key=1)
+    df_merge = pd.merge(appended_data, my_dict, on='key').drop('key',axis=1)
+    # These are all the dates that will have the days between start-end date. Now I need to join this data to "appended_data"
+    df_merge2 = df_merge.query('DOB >= start_date and DOB <= end_date')
+    df_merge3 = df_merge2.loc[:,"DOB":]
+    df_out = pd.merge(appended_data, df_merge3, how="left", on="DOB").drop(["key"], axis=1)
 
-# Drop unnecessary columns
-df_out = df_out.drop(["Upgrades", "Downgrades", "No Impact", "Net Impact",
-                      "ACH %", "CC %", "Agency Fee - 6.5% of Spend", "Extreme Reach Trafficking Fee",
-                     "Fresno Bee Post-Its",], 1)
-# Rename df
-df_out = df_out.rename(columns={"Total  ": "Join_Daily",
-                                "$": "Total_revenue", "month_year_x": "month_year", "DOB": "Date", " Fresno Co-Op Media": "Fresno Co-Op Media",
-                               " Fresno Co-Op Promos": "Fresno Co-Op Promos", "Display / Mobile / Social" : "Display_Social"})
-# turn all NaN into 0.
-df = df_out.fillna(0.0)
+    # Drop unnecessary columns
+    df_out = df_out.drop(["Upgrades", "Downgrades", "No Impact", "Net Impact",
+                          "ACH %", "CC %", "Agency Fee - 6.5% of Spend", "Extreme Reach Trafficking Fee",
+                         "Fresno Bee Post-Its",], 1)
+    # Rename df
+    df_out = df_out.rename(columns={"Total  ": "Join_Daily",
+                                    "$": "Total_revenue", "month_year_x": "month_year", "DOB": "Date", " Fresno Co-Op Media": "Fresno Co-Op Media",
+                                   " Fresno Co-Op Promos": "Fresno Co-Op Promos", "Display / Mobile / Social" : "Display_Social"})
+    # turn all NaN into 0.
+    df = df_out.fillna(0.0)
 
-# Change marketing columns into int
-cols = ["TV / Cable", "Radio", "Pandora", "Display_Social", "DMV Ads", "Mobile Billboard", "Media Investment"]
-df[cols] = df[cols].apply(pd.to_numeric, errors='coerce')
+    # Change marketing columns into int
+    cols = ["TV / Cable", "Radio", "Pandora", "Display_Social", "DMV Ads", "Mobile Billboard", "Media Investment"]
+    df[cols] = df[cols].apply(pd.to_numeric, errors='coerce')
 
-# Create join/day columns and marketing/day columns
-df["Pandora_Day"] = np.where(df["Pandora"] > 0, df["Pandora"]/df["sales_length"], df["Pandora"])
-df["TV_Day"] = np.where(df["TV / Cable"] > 0, df["TV / Cable"]/df["sales_length"], df["TV / Cable"])
-df["Radio_Day"] = np.where(df["Radio"] > 0, df["Radio"]/df["sales_length"], df["Radio"])
-df["Display_Day"] = np.where(df["Display_Social"] > 0, df["Display_Social"]/df["sales_length"], df["Display_Social"])
-df["Media_Day"] = np.where(df["Media Investment"] > 0, df["Media Investment"]/df["sales_length"], df["Media Investment"])
+    # Create join/day columns and marketing/day columns
+    df["Pandora_Day"] = np.where(df["Pandora"] > 0, df["Pandora"]/df["sales_length"], df["Pandora"])
+    df["TV_Day"] = np.where(df["TV / Cable"] > 0, df["TV / Cable"]/df["sales_length"], df["TV / Cable"])
+    df["Radio_Day"] = np.where(df["Radio"] > 0, df["Radio"]/df["sales_length"], df["Radio"])
+    df["Display_Day"] = np.where(df["Display_Social"] > 0, df["Display_Social"]/df["sales_length"], df["Display_Social"])
+    df["Media_Day"] = np.where(df["Media Investment"] > 0, df["Media Investment"]/df["sales_length"], df["Media Investment"])
 
-# Output file
-df.to_csv('pf_dataset.csv', index=False)
+    # Output file
+    df.to_csv('pf_dataset.csv', index=False)
