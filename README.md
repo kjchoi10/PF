@@ -1,2 +1,2 @@
 # PF
-PF parser
+The PF parser is an excel parsing tool that takes client data in excel spreadsheets, and formats the data to analyze in R. The parser is built to make data upload, and ETL as easy as possible, and intended to be used for non-technical analysts. There is a browser upload tool that allows users when running the program to select files that they'd like to clean. This parser was part of a client project.
